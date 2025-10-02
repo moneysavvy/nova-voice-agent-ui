@@ -26,7 +26,8 @@ export function App({ appConfig }: AppProps) {
 
   useEffect(() => {
     const onDisconnected = () => {
-      setSessionStarted(false);
+      // Don't automatically reset session - let user manually disconnect
+      // This prevents the session from ending on transient disconnects
       refreshConnectionDetails();
     };
     const onMediaDevicesError = (error: Error) => {
@@ -46,9 +47,10 @@ export function App({ appConfig }: AppProps) {
   useEffect(() => {
     let aborted = false;
     if (sessionStarted && room.state === 'disconnected') {
+      const preConnectBuffer = appConfig.isPreConnectBufferEnabled;
       Promise.all([
         room.localParticipant.setMicrophoneEnabled(true, undefined, {
-          preConnectBuffer: appConfig.isPreConnectBufferEnabled,
+          preConnectBuffer,
         }),
         existingOrRefreshConnectionDetails().then((connectionDetails) =>
           room.connect(connectionDetails.serverUrl, connectionDetails.participantToken)
@@ -63,17 +65,21 @@ export function App({ appConfig }: AppProps) {
           return;
         }
 
+        console.error('Connection error:', error);
         toastAlert({
           title: 'There was an error connecting to the agent',
           description: `${error.name}: ${error.message}`,
         });
+        // Reset session on error
+        setSessionStarted(false);
       });
     }
     return () => {
       aborted = true;
-      room.disconnect();
+      // Don't disconnect on cleanup - let the Disconnected event handler manage state
     };
-  }, [room, sessionStarted, appConfig.isPreConnectBufferEnabled]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room, sessionStarted]);
 
   const { startButtonText } = appConfig;
 
