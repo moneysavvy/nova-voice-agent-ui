@@ -68,26 +68,27 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ className }) =
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw visualization
+      // Draw visualization with smooth, friendly appearance
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
-      const numCircles = 3;
-      const baseRadius = 20;
+      const numRings = 4;
+      const baseRadius = 30;
 
-      for (let i = 0; i < numCircles; i++) {
-        const radius = baseRadius + i * 25 + normalizedLevel * 50;
-        const alpha = 0.3 - i * 0.1 + normalizedLevel * 0.5;
+      // Soft gradient rings
+      for (let i = 0; i < numRings; i++) {
+        const radius = baseRadius + i * 20 + normalizedLevel * 30;
+        const alpha = 0.15 - i * 0.03 + normalizedLevel * 0.2;
 
-        // Color based on state
+        // Soft, friendly colors
         let color;
         if (agentState === 'speaking') {
-          color = `rgba(31, 213, 249, ${alpha})`; // Cyan for agent speaking
+          color = `rgba(96, 165, 250, ${alpha})`; // Soft blue for agent
         } else if (isUserSpeaking) {
-          color = `rgba(0, 44, 242, ${alpha})`; // Blue for user speaking
+          color = `rgba(147, 197, 253, ${alpha})`; // Light blue for user
         } else if (agentState === 'listening') {
-          color = `rgba(99, 102, 241, ${alpha})`; // Purple for listening
+          color = `rgba(167, 139, 250, ${alpha})`; // Soft purple for listening
         } else {
-          color = `rgba(156, 163, 175, ${alpha})`; // Gray for idle
+          color = `rgba(203, 213, 225, ${alpha})`; // Soft gray for idle
         }
 
         ctx.beginPath();
@@ -96,21 +97,30 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ className }) =
         ctx.fill();
       }
 
-      // Draw core circles ("O O O" effect)
-      const coreSpacing = 40;
-      const coreRadius = 10 + normalizedLevel * 5;
+      // Draw single friendly pulsing circle
+      const pulseRadius = 15 + normalizedLevel * 8 + Math.sin(Date.now() / 500) * 3;
 
-      for (let i = -1; i <= 1; i++) {
-        ctx.beginPath();
-        ctx.arc(centerX + i * coreSpacing, centerY, coreRadius, 0, Math.PI * 2);
-        ctx.fillStyle =
-          agentState === 'speaking'
-            ? 'rgba(31, 213, 249, 0.9)'
-            : isUserSpeaking
-              ? 'rgba(0, 44, 242, 0.9)'
-              : 'rgba(156, 163, 175, 0.7)';
-        ctx.fill();
-      }
+      // Add glow effect
+      ctx.shadowBlur = 20;
+      ctx.shadowColor =
+        agentState === 'speaking'
+          ? 'rgba(96, 165, 250, 0.6)'
+          : isUserSpeaking
+            ? 'rgba(147, 197, 253, 0.6)'
+            : 'rgba(167, 139, 250, 0.4)';
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+      ctx.fillStyle =
+        agentState === 'speaking'
+          ? 'rgba(96, 165, 250, 0.95)'
+          : isUserSpeaking
+            ? 'rgba(147, 197, 253, 0.95)'
+            : 'rgba(203, 213, 225, 0.8)';
+      ctx.fill();
+
+      // Reset shadow
+      ctx.shadowBlur = 0;
 
       animationRef.current = requestAnimationFrame(draw);
     };
