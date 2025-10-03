@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LiveKit Connection Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>LiveKit Connection Diagnostic</h1>
+    <button onclick="testMicrophone()">Test Microphone</button>
+    <button onclick="testConnection()">Test LiveKit Connection</button>
+    <div id="status"></div>
+    <pre id="log"></pre>
+
+    <script>
+        function log(msg, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const logDiv = document.getElementById('log');
+            const statusClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            statusDiv.innerHTML = `<div class="status ${statusClass}">${msg}</div>`;
+            logDiv.textContent += `[${new Date().toISOString()}] ${msg}\n`;
+        }
+
+        async function testMicrophone() {
+            log('Testing microphone access...', 'info');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log('✅ Microphone access granted!', 'success');
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                log(`❌ Microphone error: ${error.name} - ${error.message}`, 'error');
+            }
+        }
+
+        async function testConnection() {
+            log('Getting connection details...', 'info');
+            try {
+                const response = await fetch('/api/connection-details', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                const data = await response.json();
+                log(`✅ Got connection details for room: ${data.roomName}`, 'success');
+                
+                log('Connecting to LiveKit...', 'info');
+                // Test WebSocket connection
+                const ws = new WebSocket(data.serverUrl);
+                ws.onopen = () => {
+                    log('✅ WebSocket connected!', 'success');
+                    ws.close();
+                };
+                ws.onerror = (err) => {
+                    log(`❌ WebSocket error: ${err}`, 'error');
+                };
+                ws.onclose = () => {
+                    log('WebSocket closed', 'info');
+                };
+            } catch (error) {
+                log(`❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

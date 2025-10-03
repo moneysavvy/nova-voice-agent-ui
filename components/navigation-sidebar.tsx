@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface NavigationSidebarProps {
@@ -9,20 +10,39 @@ interface NavigationSidebarProps {
   onClose: () => void;
 }
 
+// Keyboard shortcut hook
+function useEscapeKey(onEscape: () => void) {
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onEscape();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onEscape]);
+}
+
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSection, setActiveSection] = useState('home');
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const router = useRouter();
+
+  // Close on Escape key
+  useEscapeKey(onClose);
 
   const navItems = [
-    { id: 'home', label: 'Home', icon: '🏠' },
-    { id: 'chat', label: 'Chat', icon: '💬' },
-    { id: 'agents', label: 'My Agents', icon: '🤖' },
+    { id: 'home', label: 'Home', icon: '🏠', href: '/' },
+    { id: 'chat', label: 'Chat', icon: '💬', href: '/chat' },
+    { id: 'agents', label: 'My Agents', icon: '🤖', href: '/agents' },
   ];
 
   const recentItems = [
-    { id: '1', name: 'Morning Briefing', timestamp: '2 hours ago' },
-    { id: '2', name: 'Project Discussion', timestamp: '5 hours ago' },
-    { id: '3', name: 'Daily Check-in', timestamp: 'Yesterday' },
+    { id: '1', name: 'Candidate Background Researcher', timestamp: 'Just now', icon: '🔍' },
+    { id: '2', name: 'Morning Briefing', timestamp: '2 hours ago', icon: '☀️' },
+    { id: '3', name: 'Project Discussion', timestamp: '5 hours ago', icon: '💼' },
+    { id: '4', name: 'Daily Check-in', timestamp: 'Yesterday', icon: '✅' },
   ];
 
   return (
@@ -106,7 +126,11 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen, on
                   {navItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setActiveSection(item.id)}
+                      onClick={() => {
+                        setActiveSection(item.id);
+                        router.push(item.href);
+                        onClose();
+                      }}
                       className={cn(
                         'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors',
                         activeSection === item.id
@@ -137,20 +161,8 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen, on
                         key={item.id}
                         className="group flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-gray-800"
                       >
-                        <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-green-500/20 text-green-400">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                            />
-                          </svg>
+                        <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-500/20">
+                          <span className="text-lg">{item.icon}</span>
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-medium text-white">{item.name}</div>
@@ -163,7 +175,26 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({ isOpen, on
               </nav>
 
               {/* Footer */}
-              <div className="border-t border-gray-700 p-4">
+              <div className="border-t border-gray-700 p-4 space-y-3">
+                {/* Keyboard Shortcuts Button */}
+                <button
+                  onClick={() => setShowKeyboardHelp(true)}
+                  className="flex w-full items-center gap-3 rounded-lg bg-gray-800/30 px-3 py-2 text-left text-sm transition-colors hover:bg-gray-800/50"
+                >
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <div className="flex-1">
+                    <div className="font-medium text-white">Keyboard Shortcuts</div>
+                    <div className="text-xs text-gray-500">Press ? to view</div>
+                  </div>
+                </button>
+
                 {/* User Info / Settings */}
                 <div className="flex items-center gap-3 rounded-lg bg-gray-800/50 px-3 py-2.5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
