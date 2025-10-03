@@ -61,7 +61,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <head>
-        {styles && <style>{styles}</style>}
+        {styles && <style suppressHydrationWarning>{styles}</style>}
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <ApplyThemeScript />

@@ -39,11 +39,11 @@ export function AgentControlBar({
   ...props
 }: AgentControlBarProps) {
   const participants = useRemoteParticipants();
-  const [chatOpen, setChatOpen] = React.useState(false);
+  const [chatOpen, setChatOpen] = React.useState(true); // Open by default to show chat input and transcriptions
   const [isSendingMessage, setIsSendingMessage] = React.useState(false);
 
   const isAgentAvailable = participants.some((p) => p.isAgent);
-  const isInputDisabled = !chatOpen || !isAgentAvailable || isSendingMessage;
+  const isInputDisabled = !chatOpen || isSendingMessage;
 
   const [isDisconnecting, setIsDisconnecting] = React.useState(false);
 
@@ -205,18 +205,7 @@ export function AgentControlBar({
             </div>
           )}
 
-          {visibleControls.chat && (
-            <Toggle
-              variant="secondary"
-              aria-label="Toggle chat"
-              pressed={chatOpen}
-              onPressedChange={setChatOpen}
-              disabled={!isAgentAvailable}
-              className="aspect-square h-full"
-            >
-              <ChatTextIcon weight="bold" />
-            </Toggle>
-          )}
+          {/* Chat toggle hidden - chat always open */}
         </div>
         {visibleControls.leave && (
           <Button
