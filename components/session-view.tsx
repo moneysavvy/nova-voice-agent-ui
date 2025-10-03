@@ -213,9 +213,9 @@ export const SessionView = ({
         !chatOpen && 'max-h-svh overflow-hidden'
       )}
     >
-      {/* Agent Selector - Top Bar */}
+      {/* Agent Selector - Top Bar (offset to not overlap menu button) */}
       {sessionStarted && (
-        <div className="fixed top-4 left-4 z-50">
+        <div className="fixed top-4 left-20 z-50">
           <AgentSelector
             selectedAgentId={selectedAgent.id}
             onSelectAgent={setSelectedAgent}
@@ -472,30 +472,28 @@ export const SessionView = ({
       </ChatMessageView>
 
       <div className="bg-background fixed top-0 right-0 left-0 z-40 h-32 md:h-36">
-        {/* Navigation Sidebar Toggle Button */}
-        {sessionStarted && (
-          <motion.button
-            initial={{ x: -100 }}
-            animate={{ x: 0 }}
-            onClick={() => setNavSidebarOpen(!navSidebarOpen)}
-            className="absolute top-4 left-4 z-50 rounded-full border border-gray-200 bg-white/90 p-3 shadow-lg backdrop-blur-xl transition-transform hover:scale-110 dark:border-gray-800 dark:bg-gray-900/90"
-            title="Navigation Menu"
+        {/* Navigation Sidebar Toggle Button - Always Visible */}
+        <motion.button
+          initial={{ x: -100 }}
+          animate={{ x: 0 }}
+          onClick={() => setNavSidebarOpen(!navSidebarOpen)}
+          className="absolute top-4 left-4 z-50 rounded-full border border-gray-200 bg-white/90 p-3 shadow-lg backdrop-blur-xl transition-transform hover:scale-110 dark:border-gray-800 dark:bg-gray-900/90"
+          title="Navigation Menu"
+        >
+          <svg
+            className="h-5 w-5 text-gray-700 dark:text-gray-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              className="h-5 w-5 text-gray-700 dark:text-gray-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </motion.button>
-        )}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </motion.button>
 
         {/* Connection Status Bar */}
         {sessionStarted && (
